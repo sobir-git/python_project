@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-
+import os
 import pygame, sys
 from pygame.locals import *
 
@@ -12,8 +12,12 @@ pygame.mouse.set_visible(0)#turns mouse invisible on game screen
 ship = pygame.image.load("images/ship.png")#loads a ship image onto the pygame screen
 ship_top = screen.get_height() - ship.get_height()
 ship_left = screen.get_width() / 2 - ship.get_width() / 2
-
 screen.blit(ship, (ship_left, ship_top))
+
+ufo = pygame.image.load("images/ufo.png")
+ufo_top=  screen.get_height() + ufo.get_height() 
+ufo_left= screen.get_width() / 2 - ufo.get_width() / 2
+screen.blit(ufo, (ufo_top, ufo_left))
 
 shot = pygame.image.load("images/ammo.png")#loads shot image onto screen
 shot_y = 0
@@ -23,6 +27,7 @@ while True:
     screen.fill((0,0,0))#makes screen filled with black or no color
     x,y = pygame.mouse.get_pos()#gets position of mouse and makes x,y positions
     screen.blit(ship, (x-ship.get_width()/2, ship_top))#draws ship onto screen  
+    screen.blit(ufo, (100, 0))
     pygame.display.update()
 
 #The code below allows for the user to close the application using the x button at the top right corner

@@ -22,59 +22,92 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
-class Ui_Dialog(object):
-    def setupUi(self, Dialog):
-        Dialog.setObjectName(_fromUtf8("Dialog"))
-        Dialog.resize(599, 293)
-        self.buttonBox = QtGui.QDialogButtonBox(Dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.label = QtGui.QLabel(Dialog)
-        self.label.setGeometry(QtCore.QRect(240, 20, 141, 41))
+class Ui_MainWindow(object):
+    def OpenWindow(self):
+        budget_value= Ui_MainWindow(self)
+        budget_value.income_edit.setText(self.income_edit.text())
+        budget_value.exec_()
+
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName(_fromUtf8("MainWindow"))
+        MainWindow.resize(396, 290)
+        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.income_edit = QtGui.QLineEdit(self.centralwidget)
+        self.income_edit.setGeometry(QtCore.QRect(160, 70, 113, 20))
+        self.income_edit.setObjectName(_fromUtf8("income_edit"))
+        
+        
+
+        self.savings_edit = QtGui.QLineEdit(self.centralwidget)
+        self.savings_edit.setGeometry(QtCore.QRect(160, 100, 113, 20))
+        self.savings_edit.setObjectName(_fromUtf8("savings_edit"))
+
+
+        self.label = QtGui.QLabel(self.centralwidget)
+        self.label.setGeometry(QtCore.QRect(70, 70, 46, 13))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.label_2 = QtGui.QLabel(self.centralwidget)
+        self.label_2.setGeometry(QtCore.QRect(70, 100, 46, 13))
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.label_3 = QtGui.QLabel(self.centralwidget)
+        self.label_3.setGeometry(QtCore.QRect(150, 10, 151, 41))
         font = QtGui.QFont()
         font.setPointSize(20)
-        self.label.setFont(font)
-        self.label.setObjectName(_fromUtf8("label"))
-        self.label_2 = QtGui.QLabel(Dialog)
-        self.label_2.setGeometry(QtCore.QRect(200, 80, 46, 13))
-        self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.label_3 = QtGui.QLabel(Dialog)
-        self.label_3.setGeometry(QtCore.QRect(200, 120, 46, 13))
+        self.label_3.setFont(font)
         self.label_3.setObjectName(_fromUtf8("label_3"))
-        self.label_4 = QtGui.QLabel(Dialog)
-        self.label_4.setGeometry(QtCore.QRect(200, 170, 46, 13))
+
+
+        self.ok_button = QtGui.QPushButton(self.centralwidget)
+        self.ok_button.setGeometry(QtCore.QRect(70, 180, 75, 23))
+        self.ok_button.setObjectName(_fromUtf8("ok_button"))
+        self.cancel_button = QtGui.QPushButton(self.centralwidget)
+        self.cancel_button.setGeometry(QtCore.QRect(200, 180, 75, 23))
+        self.cancel_button.setObjectName(_fromUtf8("cancel_button"))
+
+        self.answer_box = QtGui.QLineEdit(self.centralwidget)
+        self.answer_box.setGeometry(QtCore.QRect(160, 150, 113, 20))
+        self.answer_box.setObjectName(_fromUtf8("answer_box"))
+        self.label_4 = QtGui.QLabel(self.centralwidget)
+        self.label_4.setGeometry(QtCore.QRect(70, 150, 46, 13))
         self.label_4.setObjectName(_fromUtf8("label_4"))
-        self.lineEdit = QtGui.QLineEdit(Dialog)
-        self.lineEdit.setGeometry(QtCore.QRect(270, 80, 113, 20))
-        self.lineEdit.setObjectName(_fromUtf8("lineEdit"))
-        self.lineEdit_2 = QtGui.QLineEdit(Dialog)
-        self.lineEdit_2.setGeometry(QtCore.QRect(270, 120, 113, 20))
-        self.lineEdit_2.setObjectName(_fromUtf8("lineEdit_2"))
-        self.lcdNumber = QtGui.QLCDNumber(Dialog)
-        self.lcdNumber.setGeometry(QtCore.QRect(270, 170, 64, 23))
-        self.lcdNumber.setObjectName(_fromUtf8("lcdNumber"))
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 396, 21))
+        self.menubar.setObjectName(_fromUtf8("menubar"))
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar.setObjectName(_fromUtf8("statusbar"))
+        MainWindow.setStatusBar(self.statusbar)
 
-        self.retranslateUi(Dialog)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), Dialog.accept)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), Dialog.reject)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog", None))
-        self.label.setText(_translate("Dialog", "Budget App", None))
-        self.label_2.setText(_translate("Dialog", "Income", None))
-        self.label_3.setText(_translate("Dialog", "Phone bill", None))
-        self.label_4.setText(_translate("Dialog", "Total", None))
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        self.label.setText(_translate("MainWindow", "Income", None))
+        self.label_2.setText(_translate("MainWindow", "Savings", None))
+        self.label_3.setText(_translate("MainWindow", "Budget App", None))
+        self.ok_button.setText(_translate("MainWindow", "OK", None))
+        self.cancel_button.setText(_translate("MainWindow", "Cancel", None))
+        self.label_4.setText(_translate("MainWindow", "Answer", None))
+        self.ok_button.clicked.connect(self.ok_clicked)
+        self.cancel_button.clicked.connect(self.cancel_clicked)
 
+    def ok_clicked(self):
+        income_value= self.income_edit.text()
+        savings_value= self.savings_edit.setText(income_value)
+        
+
+    def cancel_clicked(self):
+        sys.exit()
 
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
-    Dialog = QtGui.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
+    MainWindow = QtGui.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
     sys.exit(app.exec_())
 

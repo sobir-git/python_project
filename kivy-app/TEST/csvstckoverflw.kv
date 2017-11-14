@@ -1,0 +1,24 @@
+#:kivy 1.9.0
+<LoadFile>
+    GridLayout:
+        row_force_default: True
+        row_default_height: 40
+        rows: 3
+        cols: 2
+        padding: 10
+        spacing: 10
+        Label:
+            id: userLabel
+            text: 'Username:'
+        TextInput:
+            id: username
+        Label:
+            id: passwordLabel
+            text: 'Password:'
+        TextInput:
+            id: password
+            password: True
+        Button:
+            id:btn_login
+            text: 'Login'
+            on_press: print('OK')

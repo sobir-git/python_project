@@ -2,7 +2,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.graphics import Color
-from kivy.uix.widget.Widget import Widget
+from kivy.uix.widget import Widget
 
 class Form(GridLayout):
     def __init__(self, **kwargs):

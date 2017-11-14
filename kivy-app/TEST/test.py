@@ -1,27 +1,25 @@
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.lang import Builder
-
-
-Builder.load_string('''
-<RootWidget>
-    
-    Label:
-        id: dislay_label
-        text: '00:00'
-        
-    BoxLayout:
-        size_hint: 1, .1
-        TextInput:
-            id: user_input
-            text: '5'
-        Switch:
-            id: duration_switch
-    
-''')
+from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+import csv
+Builder.load_file('test2.kv')
 
 class RootWidget(FloatLayout):
-    pass
+
+    def __init__(self, **kw):
+        super(RootWidget, self).__init__(**kw)
+        testList= ['potato', 'jake', 'ofu', 'zach']
+        testlist = open("C:/Users/zfarley/Documents/Development/python_project/kivy-app/TEST/zachList.csv").read()
+        #reads in data
+        zach_list = testlist.split("\n")
+        #print (zach_list)
+        rows= 1
+        for value in testList:
+            btn= Button(text= str(value))
+            self.ids.grid.add_widget(btn)
+        pass
 
 
 class MainApp(App):

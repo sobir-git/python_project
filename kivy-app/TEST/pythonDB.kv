@@ -1,0 +1,55 @@
+#kivy `1.10.0`
+#: import main pythonDB
+<RootWidget>:
+    orientation: "vertical"
+    padding: 10
+    spacing: 10
+    name_input: name
+    url_input: url
+    BoxLayout:
+        size_hint_y:None
+        height: "40dp"
+        Label:
+            text: 'Name'
+        TextInput:
+            id: name
+            focus: True
+            hint_text: 'Enter manga name'
+        Label:
+            text: 'Weblink'
+        TextInput:
+            id: url
+            focus: True
+            hint_text: 'enter manga url'
+    BoxLayout:
+        size_hint_y:None
+        height: "40dp"
+        Button:
+            text: 'Submit'
+            size_hint_x: 15
+            on_press: root.submit_manga()
+        Button:
+            text: 'Open'
+            size_hint_x: 15
+            on_press: root.open_url()
+
+        Button:
+            text: 'Replace'
+            size_hint_x: 15
+            
+
+      
+    ScrollView:
+        size_hint: (1, 1)
+        height: 50
+        
+        GridLayout:
+            id: grid
+            size_hint_y: None
+            size_hint_x: 1
+            height: self.minimum_height
+            cols: 2
+            Label:
+                text:'col 1'
+            Label:
+                text:'col 2'

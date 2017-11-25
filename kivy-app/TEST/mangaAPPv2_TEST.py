@@ -32,7 +32,7 @@ class RootWidget(BoxLayout):
     url_input = ObjectProperty()
     pic_input = ObjectProperty()
     delete_list= []#array used to create a delete list to remove multiple rows when pressing delete button. #NOTE- currently not functioning
-    database= "data\pythonDB.db"#database containing app data
+    database= "data\pythonDB_TEST.db"#database containing app data
 
  
         

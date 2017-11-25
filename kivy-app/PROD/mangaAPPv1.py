@@ -1,3 +1,4 @@
+"""For the program to run you must install kivy and sqlite3"""
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
@@ -11,7 +12,7 @@ import webbrowser
 
 def create_connection(db_file):
     """ create a database connection to the SQLite database
-        specified by the db_file
+    specified by the db_file
     :param db_file: database file
     :return: Connection object or None
     """
@@ -20,53 +21,37 @@ def create_connection(db_file):
         return conn
     except Error as e:
         print(e)
- 
-    return None
-"""
-def select_all_tasks(conn):
-    
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM manga_list")
- 
-    rows = cur.fetchall()
-
-    for row in rows:
-        print(row)"""
-"""
-def main():
-    #database = "C:\\sqlite\db\pythonsqlite.db"
-    database= "C:\\Users\zfarley\Documents\Development\python_project\kivy-app\data\pythonDB.db"
-    # create a database connection
-    conn = create_connection(database)
-    with conn:
-        print("2. Query all tasks")
-        select_all_tasks(conn)
- """
-"""
-if __name__ == '__main__':
-    main()
-"""
-Builder.load_file('mangaAPPv1.kv')
+        return None
+Builder.load_file('mangaAPPv1.kv')#file contains .kv builder fiel for GUI
 
 class RootWidget(BoxLayout):
+    """The below OjectProperty variables are used to create a reference to the input widgets
+    within the mangaAPPv1.kv file."""
     name_input = ObjectProperty()
     url_input = ObjectProperty()
-    manga_list = ObjectProperty()
     pic_input = ObjectProperty()
-    row_label= []
+    delete_list= []#array used to create a delete list to remove multiple rows when pressing delete button. #NOTE- currently not functioning
+    database= "data\pythonDB.db"#database containing app data
+
+ 
+        
     def select_all_tasks(self, conn):
-           
-        cur = conn.cursor()
+        """This method performs a select all SQL statment and populates the BoxLayout
+        With the Button, Label and AsyncPicture widgets."""
+        cur = conn.cursor()#create sqlite cursor object allowing sql statements to be executed
         cur.execute("SELECT * FROM manga_list")
  
-        rows = cur.fetchall()
+        db_list = cur.fetchall()#creates list of manga_list table allowing for loop to run and populate the BoxLayout 
 
-        for row in rows:
-            lbl= Label(text='[ref='']' + row[0]+'[/ref]', id=row[0], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
-            pic= AsyncImage(source=row[2])
-            btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=row[1])
-            btn.bind(on_release=self.open_url)
-            
+        for row in db_list:
+            """Label widget generated with font 30px and markup property. The markup allows the
+            func. populate_delete_row to run when label is pressed"""
+            lbl= Label(text='[ref='']' + row[1]+'[/ref]', id=row[1], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
+            pic= AsyncImage(source=row[3])#picture widgetmade with image address given by user located in col 3
+            btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=row[2])#button widget 
+            btn.bind(on_release=self.open_url)#gives btn widget action to run open_url method when pressed
+
+            #The below is used to place the newly declared widgets onto the BoxLayout
             self.ids.grid.add_widget(lbl)
             self.ids.grid.add_widget(pic)
             self.ids.grid.add_widget(btn)
@@ -74,59 +59,73 @@ class RootWidget(BoxLayout):
     def __init__(self, **kw):
         super(RootWidget, self).__init__(**kw)
         #database = "C:\\sqlite\db\pythonsqlite.db"
-        database= "C:\\Users\zfarley\Documents\Development\python_project\kivy-app\data\pythonDB.db"
+        #database= "C:\\Users\zfarley\Documents\Development\python_project\kivy-app\data\pythonDB.db"#location 1 DB connection
+
         # create a database connection
-        conn = create_connection(database)
+        conn = create_connection(self.database)
         with conn:
             self.select_all_tasks(conn)
     def submit_manga(self):
-        # Get the student name from the TextInputs
+        # The below variables are used to obtain the 3 inputs from the users
         manga_name = self.name_input.text
         pic_name= self.pic_input.text
         new_url= self.url_input.text
         
-        database= "C:\\Users\zfarley\Documents\Development\python_project\kivy-app\data\pythonDB.db"
         # create a database connection
-        conn = create_connection(database)
+        conn = create_connection(self.database)
         cur = conn.cursor()
-        cur.execute("INSERT INTO manga_list VALUES(?, ?, ?)", (manga_name, new_url, pic_name))
+        cur.execute("INSERT INTO manga_list VALUES(NULL, ?, ?, ?)", (manga_name, new_url, pic_name))
         with conn:
-            self.select_all_tasks(conn)
+            cur.execute("SELECT * FROM manga_list ORDER BY id DESC limit 1")
+            new_line= cur.fetchall()
+            
+            
+            for item in new_line:
+                
+                
+                lbl= Label(text='[ref='']' + item[1]+'[/ref]', id=item[1], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
+                pic= AsyncImage(source=item[3])#picture widgetmade with image address given by user located in col 3
+                btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=item[2])#button widget 
+                btn.bind(on_release=self.open_url)#gives btn widget action to run open_url method when pressed
+
+                #The below is used to place the newly declared widgets onto the BoxLayout
+                self.ids.grid.add_widget(lbl)
+                self.ids.grid.add_widget(pic)
+                self.ids.grid.add_widget(btn)
+            
+        #The below declaration sets the text value for all inuts to empty
         self.ids.name.text= ''
         self.ids.url.text=''
         self.ids.pic.text=''
 
     def open_url(self, weblink):
+        """This function opens a url given by the user"""
         webbrowser.open(weblink.id)
 
     def populate_delete_row(self, label_name, third):
-        """This function only populates the items to delete once the delete button is pressed. It should 
-        also change the color of the text to inidcate the item is set for deletion"""
-        label_name.text= '[color=#5253e2]'+label_name.text+'[/color]'
-        label_name.texture_update()
-        self.row_label.append(label_name.id)
+        """This function populates the array 'delete_list' to remove items when delete button is pressed.
+        Pressing the DELETE button will also change the color of the text to inidcate the item is set for deletion
+        *NOTE: Functionality still under works"""
+        label_name.text= '[color=#5253e2]'+label_name.text+'[/color]'#change color of text
+        label_name.texture_update()#updates color change 
+        self.delete_list.append(label_name.id)#append selected item to delete_list
         
         
 
     def delete_row(self, **kwargs):
-        """this function takes the click instance of a label and populates an array with the label text
-        then a SQL DELETE statement runs using the label names within the array. Once the deletion finishes
-        the array is then set to empty again"""
-        array= self.row_label
-        database= "C:\\Users\zfarley\Documents\Development\python_project\kivy-app\data\pythonDB.db"
+        """This function uses the delete list array to execute a delete statement according to the label ID of the 
+        items within the list. *NOTE: Currently not functioning """
+        array= self.delete_list
+
         # create a database connection
-        conn = create_connection(database)
+        conn = create_connection(self.database)
         cur = conn.cursor()
         for row in array:
             cur.execute("DELETE FROM manga_list WHERE name in (?)", (row,))
             
         with conn:
             self.select_all_tasks(conn)
-        self.row_label=[]
-
-            
-
-
+        self.delete_list=[]#empty delete list for future use
 
 class MainApp(App):
     def build(self):

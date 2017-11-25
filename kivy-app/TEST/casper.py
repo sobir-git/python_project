@@ -1,3 +1,6 @@
+"""This code was found online and will be used as a source for learning about kivy screenmanagement. The needed files for this
+app to function is casper.csv"""
+
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen

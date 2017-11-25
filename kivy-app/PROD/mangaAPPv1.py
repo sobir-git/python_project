@@ -66,6 +66,10 @@ class RootWidget(BoxLayout):
         with conn:
             self.select_all_tasks(conn)
     def submit_manga(self):
+        """This function is called when the submit button is pressed. When pressed the user inputs are assigned to the below
+        variables then an INSERT sql statement is called which adds the input into the manga_list table. Once the items are added to
+        the table a new widget instance for lbl, btn and asnycimage is created and populated onthe BoxLayout. After adding the widgets
+        the form inputs are set to NULL."""
         # The below variables are used to obtain the 3 inputs from the users
         manga_name = self.name_input.text
         pic_name= self.pic_input.text
@@ -77,12 +81,9 @@ class RootWidget(BoxLayout):
         cur.execute("INSERT INTO manga_list VALUES(NULL, ?, ?, ?)", (manga_name, new_url, pic_name))
         with conn:
             cur.execute("SELECT * FROM manga_list ORDER BY id DESC limit 1")
-            new_line= cur.fetchall()
-            
+            new_line= cur.fetchall()#using previous SELECT statment this turns the data into an iterable list
             
             for item in new_line:
-                
-                
                 lbl= Label(text='[ref='']' + item[1]+'[/ref]', id=item[1], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
                 pic= AsyncImage(source=item[3])#picture widgetmade with image address given by user located in col 3
                 btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=item[2])#button widget 
@@ -114,7 +115,8 @@ class RootWidget(BoxLayout):
 
     def delete_row(self, **kwargs):
         """This function uses the delete list array to execute a delete statement according to the label ID of the 
-        items within the list. *NOTE: Currently not functioning """
+        items within the list. *NOTE: Currently not functioning need to include a DELETE widget functionility to remove
+        widgets that are no longer within the manga_list table """
         array= self.delete_list
 
         # create a database connection

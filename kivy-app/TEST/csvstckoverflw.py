@@ -1,3 +1,7 @@
+"""This code was found on stackoverflow and will be used for it's file handling system
+to further develop the main APP mangaAPPv1.py. Current files used is csvstckoverflw.kv
+*NOTE: file doesn't currently work properly but will still be analyzed later for functionality"""
+
 import csv
 import os
 import easygui

@@ -23,7 +23,7 @@ def create_connection(db_file):
     except Error as e:
         print(e)
         return None
-Builder.load_file('mangaAPPv1.kv')#file contains .kv builder fiel for GUI
+Builder.load_file('mangaAPPv2_TEST.kv')#file contains .kv builder fiel for GUI
 
 class RootWidget(BoxLayout):
     """The below OjectProperty variables are used to create a reference to the input widgets

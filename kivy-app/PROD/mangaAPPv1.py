@@ -1,4 +1,5 @@
-"""For the program to run you must install kivy and sqlite3"""
+"""For the program to run you must install kivy and sqlite3. This app is a somewhat stable release where the basic functionilty 
+the submit button works.Current improvements are being worked on within TEST environment."""
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button

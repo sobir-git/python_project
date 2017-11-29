@@ -47,7 +47,7 @@ class RootWidget(BoxLayout):
         for row in db_list:
             """Label widget generated with font 30px and markup property. The markup allows the
             func. populate_delete_row to run when label is pressed"""
-            lbl= Label(text='[ref='']' + row[1]+'[/ref]', id=row[1], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
+            lbl= Label(text='[ref='']' + row[1]+'[/ref]', id=row[1], font_size=30, markup=True, on_ref_press= self.populate_delete_row)
             pic= AsyncImage(source=row[3])#picture widgetmade with image address given by user located in col 3
             btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=row[2])#button widget 
             btn.bind(on_release=self.open_url)#gives btn widget action to run open_url method when pressed
@@ -108,11 +108,23 @@ class RootWidget(BoxLayout):
         """This function populates the array 'delete_list' to remove items when delete button is pressed.
         Pressing the DELETE button will also change the color of the text to inidcate the item is set for deletion
         *NOTE: Functionality still under works"""
-        label_name.text= '[color=#5253e2]'+label_name.text+'[/color]'#change color of text
-        label_name.texture_update()#updates color change 
-        self.delete_list.append(label_name.id)#append selected item to delete_list
-        
-        
+        if (label_name.id in self.delete_list):
+            #looks to see if label_name.id is in delete list is True if true then runs remove_delete_row function
+            self.remove_delete_row(label_name)
+        else:
+            label_name.text= '[b][color=#5253e2][ref=]'+label_name.text+'[/ref][/color][/b]'#change color of text
+            label_name.texture_update()#updates color change 
+            self.delete_list.append(label_name.id)#append selected item to delete_list
+       
+    def remove_delete_row(self, label_name): 
+        """This function removes a label_name.id from the deleted list global variable. This function
+        also changes the color back the original white color when the label is first populated
+        *NOTE- currently under development only works partially""" 
+        print (self.delete_list)
+        label_name.text='[color=#ffffff][ref=]'+label_name.id+'[/ref][/color]' #change color of text back to white color
+        label_name.texture_update()#updates label widget texture
+        self.delete_list.remove(label_name.id)#removes label_name.id from delete list
+        print(self.delete_list)
 
     def delete_row(self, **kwargs):
         """This function uses the delete list array to execute a delete statement according to the label ID of the 

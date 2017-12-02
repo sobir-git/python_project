@@ -110,17 +110,19 @@ class RootWidget(BoxLayout):
         *NOTE: Functionality still under works"""
         if (label_name.id in self.delete_list):
             #looks to see if label_name.id is in delete list is True if true then runs remove_delete_row function
-            self.remove_delete_row(label_name)
+            self.remove_delete_object(label_name)
+            print('if statement in populate delete row')
         else:
-            label_name.text= '[b][color=#5253e2][ref=]'+label_name.text+'[/ref][/color][/b]'#change color of text
+            print('else statement in populate delete row')
+            label_name.text= '[b][color=#5253e2][ref=]'+label_name.id+'[/ref][/color][/b]'#change color of text
             label_name.texture_update()#updates color change 
             self.delete_list.append(label_name.id)#append selected item to delete_list
        
-    def remove_delete_row(self, label_name): 
+    def remove_delete_object(self, label_name): 
         """This function removes a label_name.id from the deleted list global variable. This function
         also changes the color back the original white color when the label is first populated
         *NOTE- currently under development only works partially""" 
-        print (self.delete_list)
+        print ('remove delete object ran')
         label_name.text='[color=#ffffff][ref=]'+label_name.id+'[/ref][/color]' #change color of text back to white color
         label_name.texture_update()#updates label widget texture
         self.delete_list.remove(label_name.id)#removes label_name.id from delete list

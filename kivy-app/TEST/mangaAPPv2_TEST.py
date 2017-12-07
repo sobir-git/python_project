@@ -33,7 +33,7 @@ class RootWidget(BoxLayout):
     pic_input = ObjectProperty()
     delete_list= []#array used to create a delete list to remove multiple rows when pressing delete button. #NOTE- currently not functioning
     database= "data\pythonDB_TEST.db"#database containing app data
-
+    function_run= False
  
         
     def select_all_tasks(self, conn):
@@ -43,7 +43,12 @@ class RootWidget(BoxLayout):
         cur.execute("SELECT * FROM manga_list")
  
         db_list = cur.fetchall()#creates list of manga_list table allowing for loop to run and populate the BoxLayout 
-
+        """if statement added below is a test function that is going to be used all lbl, pic and btn
+        widgets before repopulating them again. The function looks for the boolean var function_run to see
+        if the function delete_row() has ran. *NOTE: Functionality still under works"""
+        if self.function_run:
+            for row in db_list:
+                self.ids.grid.remove_widget(self.ids.row[1], self.ids.row[2], self.ids.row[3])
         for row in db_list:
             """Label widget generated with font 30px and markup property. The markup allows the
             func. populate_delete_row to run when label is pressed"""
@@ -80,20 +85,19 @@ class RootWidget(BoxLayout):
         conn = create_connection(self.database)
         cur = conn.cursor()
         cur.execute("INSERT INTO manga_list VALUES(NULL, ?, ?, ?)", (manga_name, new_url, pic_name))
-        with conn:
-            cur.execute("SELECT * FROM manga_list ORDER BY id DESC limit 1")
-            new_line= cur.fetchall()#using previous SELECT statment this turns the data into an iterable list
-            
-            for item in new_line:
-                lbl= Label(text='[ref='']' + item[1]+'[/ref]', id=item[1], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
-                pic= AsyncImage(source=item[3])#picture widgetmade with image address given by user located in col 3
-                btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=item[2])#button widget 
-                btn.bind(on_release=self.open_url)#gives btn widget action to run open_url method when pressed
+        cur.execute("SELECT * FROM manga_list ORDER BY id DESC limit 1")
+        new_line= cur.fetchall()#using previous SELECT statment this turns the data into an iterable list
+        for item in new_line:
+            lbl= Label(text='[ref='']' + item[1]+'[/ref]', id=item[1], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
+            pic= AsyncImage(source=item[3])#picture widgetmade with image address given by user located in col 3
+            btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=item[2])#button widget 
+            btn.bind(on_release=self.open_url)#gives btn widget action to run open_url method when pressed
+                
 
-                #The below is used to place the newly declared widgets onto the BoxLayout
-                self.ids.grid.add_widget(lbl)
-                self.ids.grid.add_widget(pic)
-                self.ids.grid.add_widget(btn)
+            #The below is used to place the newly declared widgets onto the BoxLayout
+            self.ids.grid.add_widget(lbl)
+            self.ids.grid.add_widget(pic)
+            self.ids.grid.add_widget(btn)
             
         #The below declaration sets the text value for all inuts to empty
         self.ids.name.text= ''
@@ -127,6 +131,7 @@ class RootWidget(BoxLayout):
         label_name.texture_update()#updates label widget texture
         self.delete_list.remove(label_name.id)#removes label_name.id from delete list
         print(self.delete_list)
+        self.function_run= True
 
     def delete_row(self, **kwargs):
         """This function uses the delete list array to execute a delete statement according to the label ID of the 

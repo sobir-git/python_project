@@ -1,5 +1,7 @@
-"""This is a copy of mangaAPPv1.py within PROD folder. This file will be used to test current functionality as well as new
-functionality"""
+"""For the program to run you must install kivy and sqlite3. This application is the most recent stable version of the manga app.
+All button functionality works as expected if a bug is discovered while using this application please open and issue through the github
+page and I will address it. Thanks!!
+Future version improvements will be worked on in the TEST environment"""
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
@@ -23,19 +25,17 @@ def create_connection(db_file):
     except Error as e:
         print(e)
         return None
-Builder.load_file('mangaAPPv2_TEST.kv')#file contains .kv builder fiel for GUI
+Builder.load_file('mangaAPPv2.kv')#file contains .kv builder fiel for GUI
 
 class RootWidget(BoxLayout):
     """The below OjectProperty variables are used to create a reference to the input widgets
     within the mangaAPPv1.kv file."""
-    name_input = ObjectProperty()
+    name_input = ObjectProperty() 
     url_input = ObjectProperty()
     pic_input = ObjectProperty()
     delete_list= []#array used to create a delete list to remove multiple rows when pressing delete button. #NOTE- currently not functioning
-    database= "data\pythonDB_TEST.db"#database containing app data
+    database= "data\pythonDB.db"#database containing app data
     
- 
-        
     def select_all_tasks(self, conn):
         """This method performs a select all SQL statment and populates the BoxLayout
         With the Button, Label and AsyncPicture widgets."""
@@ -62,8 +62,6 @@ class RootWidget(BoxLayout):
 
     def __init__(self, **kw):
         super(RootWidget, self).__init__(**kw)
-        #database = "C:\\sqlite\db\pythonsqlite.db"
-        #database= "C:\\Users\zfarley\Documents\Development\python_project\kivy-app\data\pythonDB.db"#location 1 DB connection
 
         # create a database connection
         conn = create_connection(self.database)
@@ -86,18 +84,6 @@ class RootWidget(BoxLayout):
         self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
         with conn:
             self.select_all_tasks(conn)
-        """cur.execute("SELECT * FROM manga_list ORDER BY id DESC limit 1")
-        new_line= cur.fetchall()#using previous SELECT statment this turns the data into an iterable list
-        for item in new_line:
-            lbl= Label(text='[ref='']' + item[1]+'[/ref]', id=item[1], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
-            pic= AsyncImage(source=item[3])#picture widgetmade with image address given by user located in col 3
-            btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=item[2])#button widget 
-            btn.bind(on_release=self.open_url)#gives btn widget action to run open_url method when pressed
-                
-            #The below is used to place the newly declared widgets onto the BoxLayout
-            self.ids.grid.add_widget(lbl)
-            self.ids.grid.add_widget(pic)
-            self.ids.grid.add_widget(btn)"""
             
         #The below declaration sets the text value for all inuts to empty
         self.ids.name.text= ''
@@ -105,38 +91,30 @@ class RootWidget(BoxLayout):
         self.ids.pic.text=''
 
     def open_url(self, weblink):
-        """This function opens a url given by the user"""
+        """This function opens a url given by the user after pressing the "open webpage" button"""
         webbrowser.open(weblink.id)
 
     def populate_delete_row(self, label_name, third):
-        """This function populates the array 'delete_list' to remove items when delete button is pressed.
-        Pressing the DELETE button will also change the color of the text to inidcate the item is set for deletion
-        *NOTE: Functionality still under works"""
+        """This function populates the global variable array 'delete_list' to remove items when delete button is pressed.
+        Pressing the label will change the color of the text to inidcate the item is set for deletion"""
         if (label_name.id in self.delete_list):
             #looks to see if label_name.id is in delete list is True if true then runs remove_delete_row function
-            self.remove_delete_object(label_name)
-            print('if statement in populate delete row')
+            self.remove_delete_object(label_name)     
         else:
-            print('else statement in populate delete row')
             label_name.text= '[b][color=#5253e2][ref=]'+label_name.id+'[/ref][/color][/b]'#change color of text
             label_name.texture_update()#updates color change 
             self.delete_list.append(label_name.id)#append selected item to delete_list
        
     def remove_delete_object(self, label_name): 
         """This function removes a label_name.id from the deleted list global variable. This function
-        also changes the color back the original white color when the label is first populated
-        *NOTE- currently under development only works partially""" 
-        print ('remove delete object ran')
+        also changes the color back the original white color when the label is first populated""" 
         label_name.text='[color=#ffffff][ref=]'+label_name.id+'[/ref][/color]' #change color of text back to white color
         label_name.texture_update()#updates label widget texture
         self.delete_list.remove(label_name.id)#removes label_name.id from delete list
-        print(self.delete_list)
-        self.function_run= True
 
     def delete_row(self, **kwargs):
         """This function uses the delete list array to execute a delete statement according to the label ID of the 
-        items within the list. *NOTE: Currently not functioning need to include a DELETE widget functionility to remove
-        widgets that are no longer within the manga_list table """
+        items within the list. """
         array= self.delete_list
 
         # create a database connection

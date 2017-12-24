@@ -10,6 +10,7 @@ import sqlite3
 from kivy.uix.image import AsyncImage
 from sqlite3 import Error
 import webbrowser
+import os.path
 
 def create_connection(db_file):
     """ create a database connection to the SQLite database
@@ -19,11 +20,68 @@ def create_connection(db_file):
     """
     try:
         conn = sqlite3.connect(db_file)
+        
         return conn
     except Error as e:
         print(e)
         return None
-Builder.load_file('mangaAPPv2_TEST.kv')#file contains .kv builder fiel for GUI
+Builder.load_string("""
+#kivy `1.10.0`
+<RootWidget>:
+    orientation: "vertical"
+    padding: 10
+    spacing: 10
+    name_input: name
+    url_input: url
+    pic_input: pic
+    BoxLayout:
+        size_hint_y:None
+        height: "40dp"
+        Label:
+            text: 'Name'
+        TextInput:
+            id: name
+            focus: True
+            hint_text: 'manga name'
+        Label:
+            text: 'Weblink'
+        TextInput:
+            id: url
+            focus: True
+            hint_text: 'manga url'
+        Label:
+            text:'Image url'
+        TextInput:
+            id: pic
+            hint_text: 'image url'
+
+    BoxLayout:
+        size_hint_y:None
+        height: "40dp"
+        Button:
+            text: 'Submit'
+            size_hint_x: 15
+            on_press: root.submit_manga()
+        Button:
+            text: 'Delete'
+            size_hint_x: 15
+            on_press: root.delete_row()
+            
+
+      
+    ScrollView:
+        size_hint: (1, 1)
+        height: 50
+        id: scroll
+        GridLayout:
+            id: grid
+            size_hint_y: None
+            size_hint_x: 1
+            height: self.minimum_height
+            cols: 3
+            padding: 10
+            spacing: 10
+""")
 
 class RootWidget(BoxLayout):
     """The below OjectProperty variables are used to create a reference to the input widgets
@@ -32,16 +90,18 @@ class RootWidget(BoxLayout):
     url_input = ObjectProperty()
     pic_input = ObjectProperty()
     delete_list= []#array used to create a delete list to remove multiple rows when pressing delete button. #NOTE- currently not functioning
-    database= "data\pythonDB_TEST.db"#database containing app data
-    
+    #database= "pythonDB_TEST.db"#database containing app data
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(BASE_DIR, "python_TEST.db")
+    database= "data\pythonDB_TEST.db"
  
         
     def select_all_tasks(self, conn):
         """This method performs a select all SQL statment and populates the BoxLayout
         With the Button, Label and AsyncPicture widgets."""
         cur = conn.cursor()#create sqlite cursor object allowing sql statements to be executed
+        
         cur.execute("SELECT * FROM manga_list")
- 
         db_list = cur.fetchall()#creates list of manga_list table allowing for loop to run and populate the BoxLayout 
         """if statement added below is a test function that is going to be used all lbl, pic and btn
         widgets before repopulating them again. The function looks for the boolean var function_run to see

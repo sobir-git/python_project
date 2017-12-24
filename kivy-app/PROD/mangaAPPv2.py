@@ -25,7 +25,66 @@ def create_connection(db_file):
     except Error as e:
         print(e)
         return None
-Builder.load_file('mangaAPPv2.kv')#file contains .kv builder fiel for GUI
+#Builder.load_file('mangaAPPv2.kv')#file contains .kv builder field for GUI
+Builder.load_string("""
+#kivy `1.10.0`
+<RootWidget>:
+    orientation: "vertical"
+    padding: 10
+    spacing: 10
+    name_input: name
+    url_input: url
+    pic_input: pic
+    BoxLayout:
+        size_hint_y:None
+        height: "40dp"
+        Label:
+            text: 'Name'
+        TextInput:
+            id: name
+            focus: True
+            hint_text: 'manga name'
+        Label:
+            text: 'Weblink'
+        TextInput:
+            id: url
+            focus: True
+            hint_text: 'manga url'
+        Label:
+            text:'Image url'
+        TextInput:
+            id: pic
+            hint_text: 'image url'
+
+    BoxLayout:
+        size_hint_y:None
+        height: "40dp"
+        Button:
+            text: 'Submit'
+            size_hint_x: 15
+            on_press: root.submit_manga()
+        Button:
+            text: 'Delete'
+            size_hint_x: 15
+            on_press: root.delete_row()
+            
+
+      
+    ScrollView:
+        size_hint: (1, 1)
+        height: 50
+        id: scroll
+        GridLayout:
+            id: grid
+            size_hint_y: None
+            size_hint_x: 1
+            height: self.minimum_height
+            cols: 3
+            padding: 10
+            spacing: 10
+            
+
+""")
 
 class RootWidget(BoxLayout):
     """The below OjectProperty variables are used to create a reference to the input widgets

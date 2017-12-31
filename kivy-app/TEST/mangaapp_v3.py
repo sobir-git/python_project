@@ -1,5 +1,10 @@
-"""This is a copy of mangaAPPv1.py within PROD folder. This file will be used to test current functionality as well as new
-functionality"""
+"""This is the third version of the manga app created for deployment and distribution to users. The code has been optimized to not need 
+a *.kv file and instead loads the kivy builder string. The code also creates a manga.db file in the file directory of the executable and 
+creates a manga_list table to store all of the information. If the executable is moved from the current location the app will create another
+db file and table to store the info. the script is packaged up using pyinstaller. 
+
+**NOTE: current bugs include image address doesn't load webaddress images. Find out if images can be stored in DB if so add new button
+to add image to submit form"""
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
@@ -11,6 +16,9 @@ from kivy.uix.image import AsyncImage
 from sqlite3 import Error
 import webbrowser
 import os.path
+import os
+
+
 
 def create_connection(db_file):
     """ create a database connection to the SQLite database
@@ -96,7 +104,7 @@ class RootWidget(BoxLayout):
     pic_input = ObjectProperty()
     delete_list= []#array used to create a delete list to remove multiple rows when pressing delete button. #NOTE- currently not functioning
     #database= "pythonDB_TEST.db"#database containing app data
-    
+    os.environ['KIVY_IMAGE']= 'pil,sdl2'
     database= "manga.db"
  
         

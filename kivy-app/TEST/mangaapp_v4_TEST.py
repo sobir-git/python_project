@@ -12,7 +12,6 @@ import sqlite3
 from kivy.uix.image import AsyncImage
 from sqlite3 import Error
 import webbrowser
-import os.path
 import os
 
 
@@ -108,6 +107,7 @@ class RootWidget(BoxLayout):
     pic_input = ObjectProperty()
     delete_list= []#array used to create a delete list to remove multiple rows when pressing delete button. #NOTE- currently not functioning
     #database= "pythonDB_TEST.db"#database containing app data
+    img_delete_list=[]
     os.environ['KIVY_IMAGE']= 'pil,sdl2'
     database= "manga.db"
  
@@ -219,8 +219,13 @@ class RootWidget(BoxLayout):
         conn = create_connection(self.database)
         cur = conn.cursor()
         for row in array:
+            cur.execute("SELECT image FROM manga_list WHERE name in (?)", (row,))
+            img_list= cur.fetchall()
+            img_string= str(img_list).strip('([,\'])')
+            os.remove('images/' + img_string)
+            print(img_string)
             cur.execute("DELETE FROM manga_list WHERE name in (?)", (row,))
-            print(row)
+            
         self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid    
         with conn:
             self.select_all_tasks(conn)

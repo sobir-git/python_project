@@ -1,4 +1,4 @@
-"""This is version 4 of the manga app ment to change the image load option from using a
+"""This is version 4 TEST of the manga app ment to change the image load option from using a
 web link to a local link. This will be testing the load file feature of kivy in 
 attempt to load the picture using the image located in an image directory"""
 from kivy.app import App
@@ -232,7 +232,8 @@ class RootWidget(BoxLayout):
         self.delete_list=[]#empty delete list for future use
     def instructions(self, **kwargs):
         popup = Popup(title='Instructions',
-        content=Label(text='WELCOME TO THE MANGA APP!!! \nTo use this app you need 3 things\n1. title \n2.a web URL\n3.Image name (*include extension .png, .img...etc) \nOnce you save a new line will appear in the menu. \nENJOY!!'),
+        content=Label(
+            text='WELCOME TO THE MANGA APP!!! \nTo use this app you need 3 things\n1. title \n2.a web URL\n3.Image name (*include extension .png, .img...etc)\n(*see note below) \nOnce you save a new line will appear in the menu.\n*NOTE: You must manually save an image\nto the images directory\nfor the pic to appear in the app \nENJOY!!'),
         size_hint=(None, None), size=(400, 300))
         popup.open()
         

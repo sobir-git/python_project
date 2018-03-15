@@ -1,6 +1,7 @@
-"""This is version 4 TEST of the manga app ment to change the image load option from using a
-web link to a local link. This will be testing the load file feature of kivy in 
-attempt to load the picture using the image located in an image directory"""
+"""This is version 5 TEST of the manga app during this version I will implement a screenmanagement system 
+that will allow users to check for updates off mangatown.com for their desired resource
+*CURRRENT BUGS: When trying to delete row from DB application errors out due to FileNotFoundError: [WinError 3] 
+The system can't find the image file associated to any of the rows it's trying to delete."""
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
@@ -40,6 +41,15 @@ def create_connection(db_file):
         return None
 Builder.load_string("""
 #kivy `1.10.0`
+<MenuScreen>:
+    BoxLayout:
+        Button:
+            text: 'View Mainscreen'
+            on_press: root.manager.current = 'main'
+        Button:
+            text: 'View Updates'
+            on_press: root.manager.current = 'updates'
+
 <RootWidget>:
     orientation: "vertical"
     padding: 10
@@ -47,6 +57,7 @@ Builder.load_string("""
     name_input: name
     url_input: url
     pic_input: pic
+
     BoxLayout:
         size_hint_y:None
         height: "40dp"
@@ -106,13 +117,11 @@ Builder.load_string("""
             on_press: root.manager.current = 'updates'
             
 <update_screen>:
-    # nam: str(updates)
     GridLayout:
         cols: 2
-
         Button:
             text: 'Back to menu'
-            on_press: root.manager.current = 'menu'
+            on_press: root.manager.current = 'main'
         Button:
             text: 'Show Data'
             on_press: app.show()
@@ -130,15 +139,17 @@ Builder.load_string("""
                 spacing: 10
 
 """)
-class MenuScreen(Screen):
-    pass
+
 class update_screen(Screen):
     pass
-sm = ScreenManager()
-sm.add_widget(MenuScreen(name='menu'))
-sm.add_widget(update_screen(name='updates'))
 
-class RootWidget(BoxLayout):
+class main_screen(Screen):
+    pass
+
+class MenuScreen(Screen):
+    pass
+
+class RootWidget(BoxLayout, Screen):
     """The below OjectProperty variables are used to create a reference to the input widgets
     within the mangaAPPv1.kv file."""
     name_input = ObjectProperty()
@@ -179,7 +190,6 @@ class RootWidget(BoxLayout):
         super(RootWidget, self).__init__(**kw)
         #database = "C:\\sqlite\db\pythonsqlite.db"
         #database= "C:\\Users\zfarley\Documents\Development\python_project\kivy-app\data\pythonDB.db"#location 1 DB connection
-
         # create a database connection
         conn = create_connection(self.database)
         with conn:
@@ -275,13 +285,18 @@ class RootWidget(BoxLayout):
             text='WELCOME TO THE MANGA APP!!! \nTo use this app you need 3 things\n1. title \n2.a web URL\n3.Image name (*include extension .png, .img...etc)\n(*see note below) \nOnce you save a new line will appear in the menu.\n*NOTE: You must manually save an image\nto the images directory\nfor the pic to appear in the app \nENJOY!!'),
         size_hint=(None, None), size=(400, 300))
         popup.open()
-        
-        
+
+sm = ScreenManager()
+#Ssm.add_widget(MenuScreen(name='menu'))
+sm.add_widget(RootWidget(name='main'))
+sm.add_widget(update_screen(name='updates'))
 
 class MainApp(App):
     def build(self):
-        return RootWidget()
+        app_class= RootWidget()
+        return sm
 
-application= MainApp()
-application.run()
+if __name__ == '__main__':
+    MainApp().run()
+
 

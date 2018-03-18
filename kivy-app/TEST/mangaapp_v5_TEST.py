@@ -15,6 +15,8 @@ from kivy.uix.image import AsyncImage
 from sqlite3 import Error
 import webbrowser
 import os
+import urllib.request
+from bs4 import BeautifulSoup
 
 
 
@@ -41,14 +43,6 @@ def create_connection(db_file):
         return None
 Builder.load_string("""
 #kivy `1.10.0`
-<MenuScreen>:
-    BoxLayout:
-        Button:
-            text: 'View Mainscreen'
-            on_press: root.manager.current = 'main'
-        Button:
-            text: 'View Updates'
-            on_press: root.manager.current = 'updates'
 
 <RootWidget>:
     orientation: "vertical"
@@ -118,13 +112,21 @@ Builder.load_string("""
             
 <update_screen>:
     GridLayout:
+        id: update_grid
+        
+        height: "100dp"
+        orientation: "vertical"
+        padding: 10
+        spacing: 10
         cols: 2
         Button:
             text: 'Back to menu'
+            size_hint_x: 15
             on_press: root.manager.current = 'main'
         Button:
-            text: 'Show Data'
-            on_press: app.show()
+            text: 'RELOAD DATA'
+            size_hint_x: 15
+            on_press: root.update_list()
         ScrollView:
             size_hint: (1, 1)
             height: 50
@@ -141,6 +143,33 @@ Builder.load_string("""
 """)
 
 class update_screen(Screen):
+    def update_list(self, **kwargs):
+        url= 'http://www.mangatown.com/latest/text/'#URL to pull information from
+        request= urllib.request.Request(url)
+        response= urllib.request.urlopen(request)
+        soup = BeautifulSoup(response, 'html.parser')#Parse entire webpage
+
+        chapter_list = soup.find('div', attrs={'class':'manga_text_content'})#finds div that contains chapter updates
+
+        hot_updates = chapter_list.find_all('span', attrs={'class':'hot'})#compiles chapter_list and find all 'HOT' updates
+
+        """Below loop iterates through the list of updates and takes the parent HTMl
+        tag of <span class="hot">HOT</span> Then obtains the hyperlink and name of the items
+        within the hot chapter list"""
+        for item in hot_updates:
+            parent_of_updates= item.parent #obtain parent tag of class="hot" tag
+            content_of_parent= parent_of_updates.contents #display contents of parent tag
+            update_url= content_of_parent[1]['href'] #contains url of updated manga
+            updated_name= content_of_parent[1]['rel']#contains name of updated manga
+            lbl= Label(text=str(updated_name), font_size=30)
+            btn= Button(text='OPEN WEBPAGE', size_hint_y=None)#button widget 
+            #btn.bind(on_release=self.webbrowser.open(update_url))#gives btn widget action to run open_url method when pressed
+            
+            
+            self.ids.update_grid.add_widget(lbl)
+            self.ids.update_grid.add_widget(btn)
+            print('url: ' + update_url + ' Name: ' + str(updated_name))
+
     pass
 
 class main_screen(Screen):
@@ -285,6 +314,28 @@ class RootWidget(BoxLayout, Screen):
             text='WELCOME TO THE MANGA APP!!! \nTo use this app you need 3 things\n1. title \n2.a web URL\n3.Image name (*include extension .png, .img...etc)\n(*see note below) \nOnce you save a new line will appear in the menu.\n*NOTE: You must manually save an image\nto the images directory\nfor the pic to appear in the app \nENJOY!!'),
         size_hint=(None, None), size=(400, 300))
         popup.open()
+
+    def update_list(self, **kwargs):
+        url= 'http://www.mangatown.com/latest/text/'#URL to pull information from
+        request= urllib.request.Request(url)
+        response= urllib.request.urlopen(request)
+        soup = BeautifulSoup(response, 'html.parser')#Parse entire webpage
+
+        chapter_list = soup.find('div', attrs={'class':'manga_text_content'})#finds div that contains chapter updates
+
+        hot_updates = chapter_list.find_all('span', attrs={'class':'hot'})#compiles chapter_list and find all 'HOT' updates
+
+        """Below loop iterates through the list of updates and takes the parent HTMl
+        tag of <span class="hot">HOT</span> Then obtains the hyperlink and name of the items
+        within the hot chapter list"""
+        for item in hot_updates:
+            parent_of_updates= item.parent #obtain parent tag of class="hot" tag
+            content_of_parent= parent_of_updates.contents #display contents of parent tag
+            update_url= content_of_parent[1]['href'] #contains url of updated manga
+            updated_name= content_of_parent[1]['rel']#contains name of updated manga
+            lbl= Label(text=updated_name, font_size=30)
+            self.ids.update_grid.add_widget(lbl)
+            print('url: ' + update_url + ' Name: ' + str(updated_name))
 
 sm = ScreenManager()
 #Ssm.add_widget(MenuScreen(name='menu'))

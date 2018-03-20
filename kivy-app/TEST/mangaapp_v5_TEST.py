@@ -111,10 +111,12 @@ Builder.load_string("""
             on_press: root.manager.current = 'updates'
             
 <update_screen>:
+    orientation: "vertical"
+    padding: 10
+    spacing: 10
     GridLayout:
         id: update_grid
-        
-        height: "100dp"
+        height: "200dp"
         orientation: "vertical"
         padding: 10
         spacing: 10
@@ -136,7 +138,6 @@ Builder.load_string("""
                 size_hint_y: None
                 size_hint_x: 1
                 height: self.minimum_height
-                cols: 3
                 padding: 10
                 spacing: 10
 

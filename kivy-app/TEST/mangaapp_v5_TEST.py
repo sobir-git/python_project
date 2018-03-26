@@ -111,32 +111,30 @@ Builder.load_string("""
             on_press: root.manager.current = 'updates'
             
 <update_screen>:
-    GridLayout:
+    
+    BoxLayout:
         id: update_grid
-        
-        height: "100dp"
-        orientation: "vertical"
         padding: 10
         spacing: 10
-        cols: 2
+        orientation: "vertical"
         Button:
             text: 'Back to menu'
-            size_hint_x: 15
+            size_hint: (1, 0.25)
             on_press: root.manager.current = 'main'
         Button:
             text: 'RELOAD DATA'
-            size_hint_x: 15
+            size_hint: (1, 0.25)
             on_press: root.update_list()
+
         ScrollView:
             size_hint: (1, 1)
             height: 50
-            id: scroll
             GridLayout:
                 id: grid
                 size_hint_y: None
                 size_hint_x: 1
                 height: self.minimum_height
-                cols: 3
+                cols: 2
                 padding: 10
                 spacing: 10
 
@@ -161,14 +159,15 @@ class update_screen(Screen):
             content_of_parent= parent_of_updates.contents #display contents of parent tag
             update_url= content_of_parent[1]['href'] #contains url of updated manga
             updated_name= content_of_parent[1]['rel']#contains name of updated manga
-            lbl= Label(text=str(updated_name), font_size=30)
+            lbl= Label(text=str(updated_name).strip('([,\'])'), font_size=30)
             btn= Button(text='OPEN WEBPAGE', size_hint_y=None)#button widget 
             #btn.bind(on_release=self.webbrowser.open(update_url))#gives btn widget action to run open_url method when pressed
             
             
-            self.ids.update_grid.add_widget(lbl)
-            self.ids.update_grid.add_widget(btn)
-            print('url: ' + update_url + ' Name: ' + str(updated_name))
+            self.ids.grid.add_widget(lbl)
+            self.ids.grid.add_widget(btn)
+            print('url: ' + update_url + ' Name: ' + str(updated_name).strip('([,\'])'))
+            
 
     pass
 
@@ -301,7 +300,6 @@ class RootWidget(BoxLayout, Screen):
             img_list= cur.fetchall()
             img_string= str(img_list).strip('([,\'])')
             os.remove('images/' + img_string)
-            print(img_string)
             cur.execute("DELETE FROM manga_list WHERE name in (?)", (row,))
             
         self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid    

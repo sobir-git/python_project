@@ -41,6 +41,8 @@ def create_connection(db_file):
             cur.execute("CREATE TABLE manga_list (id    INTEGER PRIMARY KEY,name  STRING,url   STRING,image STRING);")
         print("created previously missing table, please run application again")
         return None
+
+#Below is the Kivy layout of the GUI for the App
 Builder.load_string("""
 #kivy `1.10.0`
 
@@ -160,13 +162,16 @@ class update_screen(Screen):
             update_url= content_of_parent[1]['href'] #contains url of updated manga
             updated_name= content_of_parent[1]['rel']#contains name of updated manga
             lbl= Label(text=str(updated_name).strip('([,\'])'), font_size=30)
-            btn= Button(text='OPEN WEBPAGE', size_hint_y=None)#button widget 
-            #btn.bind(on_release=self.webbrowser.open(update_url))#gives btn widget action to run open_url method when pressed
+            btn= Button(text='Open Webpage', id=update_url, size_hint_y=None)##adds button with url as ID and text Open webpage
+            btn.bind(on_release=self.open_url)#run open_url function when selecting button
             
-            
+            #populate widgets to screen
             self.ids.grid.add_widget(lbl)
             self.ids.grid.add_widget(btn)
-            print('url: ' + update_url + ' Name: ' + str(updated_name).strip('([,\'])'))
+
+    def open_url(self, button):
+        """This function opens a url of the updated manga"""
+        webbrowser.open(button.id)
             
 
     pass

@@ -156,6 +156,8 @@ class update_screen(Screen):
         """Below loop iterates through the list of updates and takes the parent HTMl
         tag of <span class="hot">HOT</span> Then obtains the hyperlink and name of the items
         within the hot chapter list"""
+        self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
+
         for item in hot_updates:
             parent_of_updates= item.parent #obtain parent tag of class="hot" tag
             content_of_parent= parent_of_updates.contents #display contents of parent tag
@@ -240,10 +242,18 @@ class RootWidget(BoxLayout, Screen):
         # create a database connection
         conn = create_connection(self.database)
         cur = conn.cursor()
-        cur.execute("INSERT INTO manga_list VALUES(NULL, ?, ?, ?)", (manga_name, new_url, pic_name))
-        self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
-        with conn:
-            self.select_all_tasks(conn)
+        if(manga_name == '' or pic_name =='' or new_url== ''):
+            popup = Popup(title='WARNING',
+            content=Label(
+            text='Please enter a value in ALL fields!!'),
+            size_hint=(None, None), size=(400, 300))
+            popup.open()
+        else:
+            cur.execute("INSERT INTO manga_list VALUES(NULL, ?, ?, ?)", (manga_name, new_url, pic_name))
+            self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
+            with conn:
+                self.select_all_tasks(conn)
+        
         """cur.execute("SELECT * FROM manga_list ORDER BY id DESC limit 1")
         new_line= cur.fetchall()#using previous SELECT statment this turns the data into an iterable list
         for item in new_line:

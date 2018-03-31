@@ -5,6 +5,14 @@ updates on a different screen"""
 import urllib.request
 from bs4 import BeautifulSoup
 
+try:
+    url= 'http://www.mangatown.com/latest/text/'
+    urllib.request.urlopen(url)    
+except urllib.error.HTTPError as e:
+    print("created previously missing table, please run application again")
+    print(e.code)
+
+
 url= 'http://www.mangatown.com/latest/text/'#URL to pull information from
 request= urllib.request.Request(url)
 response= urllib.request.urlopen(request)

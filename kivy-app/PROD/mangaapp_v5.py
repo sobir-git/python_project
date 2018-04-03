@@ -2,6 +2,7 @@
 a second screen to pull in updated "hot" updates from the source mangatown.com. After
 running reload a label and button populate where the button opens the url leading to the
 new update"""
+
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.button import Button
@@ -38,7 +39,7 @@ def create_connection(db_file):
         return conn
     except Error as e:
         with conn:
-            cur.execute("CREATE TABLE manga_list (id   INTEGER PRIMARY KEY,name  STRING,url   STRING,image STRING);")
+            cur.execute("CREATE TABLE manga_list (id    INTEGER PRIMARY KEY,name  STRING,url   STRING,image STRING);")
         print("created previously missing table, please run application again")
         return None
 
@@ -142,6 +143,10 @@ Builder.load_string("""
 
 """)
 
+"""The below class is the second screen that appears when pressing the "updates?" button
+The class runs function that web crawls through the url https://www.mangatown.com/latest/text
+once in the website it pulls down the HOT updates from the website and takes the name and url
+and adds a txt and button widget to the screen respectively."""
 class update_screen(Screen):
     def update_list(self, **kwargs):
         url= 'http://www.mangatown.com/latest/text/'#URL to pull information from
@@ -156,6 +161,8 @@ class update_screen(Screen):
         """Below loop iterates through the list of updates and takes the parent HTMl
         tag of <span class="hot">HOT</span> Then obtains the hyperlink and name of the items
         within the hot chapter list"""
+        self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
+
         for item in hot_updates:
             parent_of_updates= item.parent #obtain parent tag of class="hot" tag
             content_of_parent= parent_of_updates.contents #display contents of parent tag
@@ -189,6 +196,7 @@ class RootWidget(BoxLayout, Screen):
     url_input = ObjectProperty()
     pic_input = ObjectProperty()
     delete_list= []#array used to create a delete list to remove multiple rows when pressing delete button. #NOTE- currently not functioning
+    #database= "pythonDB_TEST.db"#database containing app data
     img_delete_list=[]
     os.environ['KIVY_IMAGE']= 'pil,sdl2'
     database= "manga.db"
@@ -239,10 +247,30 @@ class RootWidget(BoxLayout, Screen):
         # create a database connection
         conn = create_connection(self.database)
         cur = conn.cursor()
-        cur.execute("INSERT INTO manga_list VALUES(NULL, ?, ?, ?)", (manga_name, new_url, pic_name))
-        self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
-        with conn:
-            self.select_all_tasks(conn)
+        if(manga_name == '' or pic_name =='' or new_url== ''):
+            popup = Popup(title='WARNING',
+            content=Label(
+            text='Please enter a value in ALL fields!!'),
+            size_hint=(None, None), size=(400, 300))
+            popup.open()
+        else:
+            cur.execute("INSERT INTO manga_list VALUES(NULL, ?, ?, ?)", (manga_name, new_url, pic_name))
+            self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
+            with conn:
+                self.select_all_tasks(conn)
+        
+        """cur.execute("SELECT * FROM manga_list ORDER BY id DESC limit 1")
+        new_line= cur.fetchall()#using previous SELECT statment this turns the data into an iterable list
+        for item in new_line:
+            lbl= Label(text='[ref='']' + item[1]+'[/ref]', id=item[1], font_size=30, markup=True, on_ref_press=self.populate_delete_row)
+            pic= AsyncImage(source=item[3])#picture widgetmade with image address given by user located in col 3
+            btn= Button(text='OPEN WEBPAGE', size_hint_y=None, id=item[2])#button widget 
+            btn.bind(on_release=self.open_url)#gives btn widget action to run open_url method when pressed
+                
+            #The below is used to place the newly declared widgets onto the BoxLayout
+            self.ids.grid.add_widget(lbl)
+            self.ids.grid.add_widget(pic)
+            self.ids.grid.add_widget(btn)"""
             
         #The below declaration sets the text value for all inuts to empty
         self.ids.name.text= ''
@@ -255,21 +283,27 @@ class RootWidget(BoxLayout, Screen):
 
     def populate_delete_row(self, label_name, third):
         """This function populates the array 'delete_list' to remove items when delete button is pressed.
-        Pressing the DELETE button will also change the color of the text to inidcate the item is set for deletion"""
+        Pressing the DELETE button will also change the color of the text to inidcate the item is set for deletion
+        *NOTE: Functionality still under works"""
         if (label_name.id in self.delete_list):
             #looks to see if label_name.id is in delete list is True if true then runs remove_delete_row function
             self.remove_delete_object(label_name)
+            print('if statement in populate delete row')
         else:
+            print('else statement in populate delete row')
             label_name.text= '[b][color=#5253e2][ref=]'+label_name.id+'[/ref][/color][/b]'#change color of text
             label_name.texture_update()#updates color change 
             self.delete_list.append(label_name.id)#append selected item to delete_list
        
     def remove_delete_object(self, label_name): 
         """This function removes a label_name.id from the deleted list global variable. This function
-        also changes the color back the original white color when the label is first populated""" 
+        also changes the color back the original white color when the label is first populated
+        *NOTE- currently under development only works partially""" 
+        print ('remove delete object ran')
         label_name.text='[color=#ffffff][ref=]'+label_name.id+'[/ref][/color]' #change color of text back to white color
         label_name.texture_update()#updates label widget texture
         self.delete_list.remove(label_name.id)#removes label_name.id from delete list
+        print(self.delete_list)
         self.function_run= True
 
     def delete_row(self, **kwargs):
@@ -292,7 +326,6 @@ class RootWidget(BoxLayout, Screen):
         with conn:
             self.select_all_tasks(conn)
         self.delete_list=[]#empty delete list for future use
-        """below function opens up an instruction screen to show users how to run APP"""
     def instructions(self, **kwargs):
         popup = Popup(title='Instructions',
         content=Label(
@@ -300,9 +333,30 @@ class RootWidget(BoxLayout, Screen):
         size_hint=(None, None), size=(400, 300))
         popup.open()
 
-    
+    def update_list(self, **kwargs):
+        url= 'http://www.mangatown.com/latest/text/'#URL to pull information from
+        request= urllib.request.Request(url)
+        response= urllib.request.urlopen(request)
+        soup = BeautifulSoup(response, 'html.parser')#Parse entire webpage
+
+        chapter_list = soup.find('div', attrs={'class':'manga_text_content'})#finds div that contains chapter updates
+
+        hot_updates = chapter_list.find_all('span', attrs={'class':'hot'})#compiles chapter_list and find all 'HOT' updates
+
+        """Below loop iterates through the list of updates and takes the parent HTMl
+        tag of <span class="hot">HOT</span> Then obtains the hyperlink and name of the items
+        within the hot chapter list"""
+        for item in hot_updates:
+            parent_of_updates= item.parent #obtain parent tag of class="hot" tag
+            content_of_parent= parent_of_updates.contents #display contents of parent tag
+            update_url= content_of_parent[1]['href'] #contains url of updated manga
+            updated_name= content_of_parent[1]['rel']#contains name of updated manga
+            lbl= Label(text=updated_name, font_size=30)
+            self.ids.update_grid.add_widget(lbl)
+            print('url: ' + update_url + ' Name: ' + str(updated_name))
 
 sm = ScreenManager()
+#Ssm.add_widget(MenuScreen(name='menu'))
 sm.add_widget(RootWidget(name='main'))
 sm.add_widget(update_screen(name='updates'))
 

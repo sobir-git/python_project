@@ -145,7 +145,7 @@ Builder.load_string("""
 class update_screen(Screen):
     def update_list(self, **kwargs):
         url= 'http://www.mangatown.com/latest/text/'#URL to pull information from
-        request= urllib.request.Request(url)
+        request= urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         response= urllib.request.urlopen(request)
         soup = BeautifulSoup(response, 'html.parser')#Parse entire webpage
 

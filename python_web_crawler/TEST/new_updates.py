@@ -14,7 +14,7 @@ except urllib.error.HTTPError as e:
 
 
 url= 'http://www.mangatown.com/latest/text/'#URL to pull information from
-request= urllib.request.Request(url)
+request= urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
 response= urllib.request.urlopen(request)
 soup = BeautifulSoup(response, 'html.parser')#Parse entire webpage
 #name_box = soup.find('ul', attrs={'class': 'chapter_list'})#finds unordered list of chapter updates

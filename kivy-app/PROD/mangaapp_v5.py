@@ -26,27 +26,29 @@ def create_connection(db_file):
     :param db_file: database file
     :return: Connection object or None
     """
-    try:
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(BASE_DIR, "manga.db")
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()  # create sqlite cursor object allowing sql statements to be executed
-        cur.execute("SELECT * FROM manga_list")
-        imgdir = os.path.join(BASE_DIR, "images")
-        if not os.path.exists(imgdir):
-            os.makedirs(imgdir)
-        return conn
-    except Error as e:
-        with conn:
-            cur.execute("CREATE TABLE manga_list (id    INTEGER PRIMARY KEY,name  STRING,url   STRING,image STRING);")
-        print("created previously missing table, please run application again")
-        return None
+
+    # try two times
+    for i in (1, 2):
+        try:
+            BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+            db_path = os.path.join(BASE_DIR, "manga.db")
+            conn = sqlite3.connect(db_path)
+            cur = conn.cursor()  # create sqlite cursor object allowing sql statements to be executed
+            cur.execute("SELECT * FROM manga_list")
+            imgdir = os.path.join(BASE_DIR, "images")
+            if not os.path.exists(imgdir):
+                os.makedirs(imgdir)
+            return conn
+        except Error as e:
+            with conn:
+                cur.execute("CREATE TABLE manga_list (id    INTEGER PRIMARY KEY,name  STRING,url   STRING,image STRING);")
+            print("created previously missing table, please run application again")
+    return None
 
 
 # Below is the Kivy layout of the GUI for the App
 Builder.load_string("""
 #kivy `1.10.0`
-
 <RootWidget>:
     orientation: "vertical"
     padding: 10
@@ -54,7 +56,6 @@ Builder.load_string("""
     name_input: name
     url_input: url
     pic_input: pic
-
     BoxLayout:
         size_hint_y:None
         height: "40dp"
@@ -75,7 +76,6 @@ Builder.load_string("""
         TextInput:
             id: pic
             hint_text: 'image url'
-
     BoxLayout:
         size_hint_y:None
         height: "40dp"
@@ -104,7 +104,6 @@ Builder.load_string("""
             cols: 3
             padding: 10
             spacing: 10
-
     BoxLayout:
         size_hint_y:None
         height: "40dp"
@@ -128,7 +127,6 @@ Builder.load_string("""
             text: 'RELOAD DATA'
             size_hint: (1, 0.25)
             on_press: root.update_list()
-
         ScrollView:
             size_hint: (1, 1)
             height: 50
@@ -140,7 +138,6 @@ Builder.load_string("""
                 cols: 2
                 padding: 10
                 spacing: 10
-
 """)
 
 """The below class is the second screen that appears when pressing the "updates?" button
@@ -171,6 +168,11 @@ class update_screen(Screen):
             content_of_parent = parent_of_updates.contents  # display contents of parent tag
             # contains url of updated manga
             update_url = content_of_parent[1]['href']
+
+            # if url is like "//www.google.com", then remove first two chars
+            if update_url.startswith('//'):
+                update_url = update_url[2:]
+
             # contains name of updated manga
             updated_name = content_of_parent[1]['rel']
             lbl = Label(text=str(updated_name).strip('([,\'])'), font_size=30)
@@ -231,7 +233,15 @@ class RootWidget(BoxLayout, Screen):
                         font_size=30, markup=True, on_ref_press=self.populate_delete_row)
             # picture widgetmade with image address given by user located in
             # col 3
-            pic = AsyncImage(source='images/' + row[3])
+
+            # check if the file is local, i.e in 'images' folder then load it
+            # otherwise treat the path like web url
+            local_path = os.path.join('images', row[3])
+            if os.path.exists(local_path):
+                pic = AsyncImage(source=local_path)
+            else:
+                pic = AsyncImage(source=row[3])
+
             btn = Button(text='OPEN WEBPAGE', size_hint_y=None,
                          id=row[2])  # button widget
             # gives btn widget action to run open_url method when pressed
@@ -276,6 +286,11 @@ class RootWidget(BoxLayout, Screen):
             self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
             with conn:
                 self.select_all_tasks(conn)
+
+            #The below declaration sets the text value for all inuts to empty
+            self.ids.name.text= ''
+            self.ids.url.text=''
+            self.ids.pic.text=''
         
         """cur.execute("SELECT * FROM manga_list ORDER BY id DESC limit 1")
         new_line= cur.fetchall()#using previous SELECT statment this turns the data into an iterable list
@@ -290,10 +305,6 @@ class RootWidget(BoxLayout, Screen):
             self.ids.grid.add_widget(pic)
             self.ids.grid.add_widget(btn)"""
             
-        #The below declaration sets the text value for all inuts to empty
-        self.ids.name.text= ''
-        self.ids.url.text=''
-        self.ids.pic.text=''
 
     def open_url(self, weblink):
         """This function opens a url given by the user"""
@@ -339,13 +350,18 @@ class RootWidget(BoxLayout, Screen):
                 "SELECT image FROM manga_list WHERE name in (?)", (row,))
             img_list = cur.fetchall()
             img_string = str(img_list).strip('([,\'])')
-            os.remove('images/' + img_string)
             cur.execute("DELETE FROM manga_list WHERE name in (?)", (row,))
+
+            try:  # prevent crash on finding file
+                os.remove(os.path.join('images', img_string))
+            except FileNotFoundError:
+                pass
 
         self.ids.grid.clear_widgets()  # removes widgets from scroll view id of grid
         with conn:
             self.select_all_tasks(conn)
         self.delete_list=[]#empty delete list for future use
+
     def instructions(self, **kwargs):
         popup = Popup(title='Instructions',
                       content=Label(

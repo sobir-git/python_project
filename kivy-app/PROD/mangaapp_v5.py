@@ -8,7 +8,7 @@ from kivy.lang import Builder
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty, BooleanProperty, NumericProperty
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 import sqlite3
@@ -86,7 +86,7 @@ Builder.load_string("""
         Button:
             text: 'Delete'
             size_hint_x: 15
-            on_press: root.delete_row()
+            on_press: root.delete_selection()
         Button:
             text: 'Instructions'
             size_hint_x: 15
@@ -96,12 +96,12 @@ Builder.load_string("""
         size_hint: (1, 1)
         height: 50
         id: scroll
-        GridLayout:
-            id: grid
+        BoxLayout:
+            id: box
+            orientation: 'vertical'
             size_hint_y: None
             size_hint_x: 1
             height: self.minimum_height
-            cols: 3
             padding: 10
             spacing: 10
     BoxLayout:
@@ -138,12 +138,36 @@ Builder.load_string("""
                 cols: 2
                 padding: 10
                 spacing: 10
+
+
+<Row>:
+    canvas:
+        Color:
+            rgb: (.3, .3, .3) if self.selected else (.1, .1, .1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: 100
+    padding: 5
+    spacing: 5
+    Label:
+        text: root.name
+    AsyncImage:
+        source: root.image
+    Button:
+        text: "Open Webpage"
+        on_release: root.open_url
+
 """)
 
 """The below class is the second screen that appears when pressing the "updates?" button
 The class runs function that web crawls through the url https://www.mangatown.com/latest/text
 once in the website it pulls down the HOT updates from the website and takes the name and url
 and adds a txt and button widget to the screen respectively."""
+
 class update_screen(Screen):
     def update_list(self, **kwargs):
         url = 'http://www.mangatown.com/latest/text/'  # URL to pull information from
@@ -192,6 +216,34 @@ class update_screen(Screen):
     pass
 
 
+class Row(BoxLayout):
+    """This class represents the entries in a row, containing manga name, manga image, manga url.
+    Subclasses BoxLayout, contains three fields.
+    Attributes:
+        name: name of manga (StringProperty)
+        image: image filename (StringProperty)
+        url: (StringProperty)
+        ID: corresponding id in database (NumericProperty)
+        selected: state of being selected (BooleanProperty)
+    """
+    name = StringProperty()
+    image = StringProperty()
+    url = StringProperty()
+    ID = NumericProperty()
+    selected = BooleanProperty(False)
+
+    def open_url(self, *args):
+        """This function opens a url given by the user"""
+        webbrowser.open(self.url)
+
+    def on_touch_down(self, touch):
+        """ This function changes self.selected attribute when row is touched(or clicked) """
+        if self.collide_point(*touch.pos):
+            self.selected = (True, False)[self.selected]
+            return True
+        return super().on_touch_down(touch)
+
+
 class main_screen(Screen):
     pass
 
@@ -229,8 +281,6 @@ class RootWidget(BoxLayout, Screen):
         for row in db_list:
             """Label widget generated with font 30px and markup property. The markup allows the
             func. populate_delete_row to run when label is pressed"""
-            lbl = Label(text='[ref='']' + row[1] + '[/ref]', id=row[1],
-                        font_size=30, markup=True, on_ref_press=self.populate_delete_row)
             # picture widgetmade with image address given by user located in
             # col 3
 
@@ -238,20 +288,15 @@ class RootWidget(BoxLayout, Screen):
             # otherwise treat the path like web url
             local_path = os.path.join('images', row[3])
             if os.path.exists(local_path):
-                pic = AsyncImage(source=local_path)
+                image_path = local_path
             else:
-                pic = AsyncImage(source=row[3])
+                image_path = row[3]
 
-            btn = Button(text='OPEN WEBPAGE', size_hint_y=None,
-                         id=row[2])  # button widget
-            # gives btn widget action to run open_url method when pressed
-            btn.bind(on_release=self.open_url)
+            # create row
+            row = Row(ID=row[0], name=row[1], image=image_path, url=row[2])
+            row.bind(selected=self.update_delete_list)
+            self.ids.box.add_widget(row)
 
-            # The below is used to place the newly declared widgets onto the
-            # BoxLayout
-            self.ids.grid.add_widget(lbl)
-            self.ids.grid.add_widget(pic)
-            self.ids.grid.add_widget(btn)
 
     def __init__(self, **kw):
         super(RootWidget, self).__init__(**kw)
@@ -265,7 +310,7 @@ class RootWidget(BoxLayout, Screen):
     def submit_manga(self):
         """This function is called when the submit button is pressed. When pressed the user inputs are assigned to the below
         variables then an INSERT sql statement is called which adds the input into the manga_list table. Once the items are added to
-        the table a new widget instance for lbl, btn and asnycimage is created and populated onthe BoxLayout. After adding the widgets
+        the table a new row widget instance is created and populated on the BoxLayout. After adding the widgets
         the form inputs are set to NULL."""
         # The below variables are used to obtain the 3 inputs from the users
         manga_name = self.name_input.text
@@ -283,7 +328,7 @@ class RootWidget(BoxLayout, Screen):
             popup.open()
         else:
             cur.execute("INSERT INTO manga_list VALUES(NULL, ?, ?, ?)", (manga_name, new_url, pic_name))
-            self.ids.grid.clear_widgets()#removes widgets from scroll view id of grid
+            self.ids.box.clear_widgets() #removes widgets from scroll view id of grid
             with conn:
                 self.select_all_tasks(conn)
 
@@ -310,57 +355,45 @@ class RootWidget(BoxLayout, Screen):
         """This function opens a url given by the user"""
         webbrowser.open(weblink.id)
 
-    def populate_delete_row(self, label_name, third):
-        """This function populates the array 'delete_list' to remove items when delete button is pressed.
-        Pressing the DELETE button will also change the color of the text to inidcate the item is set for deletion
-        *NOTE: Functionality still under works"""
-        if (label_name.id in self.delete_list):
-            # looks to see if label_name.id is in delete list is True if true
-            # then runs remove_delete_row function
-            self.remove_delete_object(label_name)
-            print('if statement in populate delete row')
+    def update_delete_list(self, row, selected):
+        """This function populates the array 'delete_list' to remove
+        rows when delete button is pressed."""
+
+        if selected:
+            self.delete_list.append(row)
         else:
-            print('else statement in populate delete row')
-            label_name.text= '[b][color=#5253e2][ref=]'+label_name.id+'[/ref][/color][/b]'#change color of text
-            label_name.texture_update()#updates color change 
-            self.delete_list.append(label_name.id)#append selected item to delete_list
-       
-    def remove_delete_object(self, label_name): 
-        """This function removes a label_name.id from the deleted list global variable. This function
-        also changes the color back the original white color when the label is first populated
-        *NOTE- currently under development only works partially""" 
-        print ('remove delete object ran')
-        label_name.text='[color=#ffffff][ref=]'+label_name.id+'[/ref][/color]' #change color of text back to white color
-        label_name.texture_update()#updates label widget texture
-        self.delete_list.remove(label_name.id)#removes label_name.id from delete list
-        print(self.delete_list)
-        self.function_run= True
+            self.delete_list.remove(row)
 
-    def delete_row(self, **kwargs):
-        """This function uses the delete list array to execute a delete statement according to the label ID of the 
-        items within the list. *NOTE: Currently not functioning need to include a DELETE widget functionility to remove
-        widgets that are no longer within the manga_list table """
-        array = self.delete_list
+    def delete_selection(self):
+        """ The function handles deletion of selected rows.
+        It deletes corresponding widgets.
+        It deletes corresponding data from database.
 
-        # create a database connection
+        Note: For now it is not deleting from database, I don't know why :(.
+        """
+
+        # delete selected widgets(stored in self.delete_list) from scrollview
+        box = self.ids.box
+        for row in self.delete_list:
+            box.remove_widget(row)
+
+        # delete from database
         conn = create_connection(self.database)
         cur = conn.cursor()
-        for row in array:
+        for row in self.delete_list:
             cur.execute(
-                "SELECT image FROM manga_list WHERE name in (?)", (row,))
-            img_list = cur.fetchall()
-            img_string = str(img_list).strip('([,\'])')
-            cur.execute("DELETE FROM manga_list WHERE name in (?)", (row,))
+                "SELECT image FROM manga_list WHERE id == ?", (row.ID, ))
+            img_string = cur.fetchall()[0][0]
 
-            try:  # prevent crash on finding file
+            cur.execute("DELETE FROM manga_list WHERE id == ?", (row.ID,))
+
+            # try to delete image
+            try:
                 os.remove(os.path.join('images', img_string))
-            except FileNotFoundError:
+            except FileNotFoundError:  # prevent crash on finding file
                 pass
 
-        self.ids.grid.clear_widgets()  # removes widgets from scroll view id of grid
-        with conn:
-            self.select_all_tasks(conn)
-        self.delete_list=[]#empty delete list for future use
+        self.delete_list.clear()
 
     def instructions(self, **kwargs):
         popup = Popup(title='Instructions',
@@ -390,6 +423,7 @@ class RootWidget(BoxLayout, Screen):
             lbl= Label(text=updated_name, font_size=30)
             self.ids.update_grid.add_widget(lbl)
             print('url: ' + update_url + ' Name: ' + str(updated_name))
+
 
 sm = ScreenManager()
 #Ssm.add_widget(MenuScreen(name='menu'))

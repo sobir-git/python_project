@@ -159,7 +159,7 @@ Builder.load_string("""
         source: root.image
     Button:
         text: "Open Webpage"
-        on_release: root.open_url
+        on_release: root.open_url()
 
 """)
 
@@ -238,11 +238,12 @@ class Row(BoxLayout):
 
     def on_touch_down(self, touch):
         """ This function changes self.selected attribute when row is touched(or clicked) """
+        if super().on_touch_down(touch):
+            return True
+
         if self.collide_point(*touch.pos):
             self.selected = (True, False)[self.selected]
             return True
-        return super().on_touch_down(touch)
-
 
 class main_screen(Screen):
     pass
